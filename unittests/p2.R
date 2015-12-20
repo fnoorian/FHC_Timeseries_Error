@@ -38,8 +38,8 @@ B_coeff = rbind(B_coeff, 0)
 C_coeff = matrix(0, h+1, 1)
 C_coeff[h+1, 1] = -1
 
-Q <- function(N) diag(rep(c(0, 0, 0, 8), N)) # state weights
-P <- function(N) diag(rep(c(1, 2, 4), N)) # inputs weights
+Q <- function(n) diag(rep(c(0, 0, 0, 8), n)) # state weights
+P <- function(n) diag(rep(c(1, 2, 4), n)) # inputs weights
 
 ################################################
 # The problem setup
@@ -73,19 +73,19 @@ n_C = ncol(C_coeff); stopifnot(n_C == 1) # only 1 input is supported in the emul
 x = x0
 
 for (i in 1:N_steps) {
-  N = horizons[i]
+  n = horizons[i]
   current_E = EL[[i]]
   current_V = VL[[i]]
   
-  projected_Y = pinv(SC(N)) %*% SA(N) %*% x + current_V + current_E
-  C_projected_Y = SA(N) %*% x + SC(N) %*% (current_V + current_E)
+  projected_Y = pinv(SC(n)) %*% SA(n) %*% x + current_V + current_E
+  C_projected_Y = SA(n) %*% x + SC(n) %*% (current_V + current_E)
   
   X0L[[i]] = x
   YL[[i]] = projected_Y
   CYL[[i]] = C_projected_Y
   
-  U_x = JAB(N) %*% projected_Y
-  U =  JAB_c(N) %*% C_projected_Y
+  U_x = JAB(n) %*% projected_Y
+  U =  JAB_c(n) %*% C_projected_Y
   UL[[i]] = U
   
   assert_vector_equality(U, U_x)

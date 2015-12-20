@@ -15,6 +15,8 @@
 ################################################################################
 # Synthetic test for LQ Error
 
+rm(list=ls())
+
 source("formatting/curve_plot.R")
 source("formatting/print_table.R")
 OUTPUT.DIR = "Output"
@@ -25,7 +27,9 @@ source("fhc/theta.R")
 source("fhc/simulator.R")
 source("prediction/linear_predictor.R")
 
+######## Experiment repeatition settings
 set.seed(1) # for reproducibility
+num_total_tests = 10
 
 ######## the problem definition
 x0 = 0
@@ -34,11 +38,11 @@ A_coeff = matrix(1, 1, 1)
 B_coeff = matrix(1, 1, 1)
 C_coeff = matrix(1, 1, 1)
 
-P <- function(N) diag(N) 
-Q <- function(N) diag(N) 
+# stage costs for a horizon of length n
+P <- function(n) diag(n)
+Q <- function(n) diag(n)
 
 ####### Train and test range
-num_total_tests = 10
 len_total_data = 100
 
 train_range1 = 1:60   # validation 1
@@ -54,7 +58,7 @@ train_range4 = 1:90   # test 2
 test_range4 = 91:100
 
 ####### The AR model
-ar.alpha = c( 2.75771015, -3.13187110,  1.78730851, -0.49586865,  0.05065899)
+ar.alpha = c(2.75771015, -3.13187110,  1.78730851, -0.49586865,  0.05065899)
 
 v_collection = list()
 for (i in 1:num_total_tests) {
@@ -62,7 +66,7 @@ for (i in 1:num_total_tests) {
 }
 #########################################################
 ## The Theta and its compressed version
-horizons = c(rep.int(5,5), 5:1)
+horizons = c(rep.int(5,5), 5:1) # the horizons are 5 receding and then 5 shrinking
 
 theta = Theta_matrix(horizons)
 
@@ -117,27 +121,20 @@ e2_list = list()
 e3_list = list()
 e4_list = list()
 
-t1 = system.time({
-  for (order_list in model_list) {
-    for (test_number in 1:num_total_tests) {
-      v = v_collection[[test_number]]
-      
-      e1_list[[length(e1_list) + 1]] = predict_horizons_error(order_list, v[train_range1], v[test_range1])
-      e2_list[[length(e2_list) + 1]] = predict_horizons_error(order_list, v[train_range2], v[test_range2])
-    }
-  }
-})
-
 for (order_list in model_list) {
+  cat("Testing Order:", order_list, "\n")
+  
   for (test_number in 1:num_total_tests) {
     v = v_collection[[test_number]]
-    
+
+    e1_list[[length(e1_list) + 1]] = predict_horizons_error(order_list, v[train_range1], v[test_range1])
+    e2_list[[length(e2_list) + 1]] = predict_horizons_error(order_list, v[train_range2], v[test_range2])
     e3_list[[length(e3_list) + 1]] = predict_horizons_error(order_list, v[train_range3], v[test_range3])
     e4_list[[length(e4_list) + 1]] = predict_horizons_error(order_list, v[train_range4], v[test_range4])
   }
 }
 
-save(e1_list, e2_list, e3_list, e4_list, file=file.path(OUTPUT.DIR, "errors.RData"))
+save(e1_list, e2_list, e3_list, e4_list, file=file.path(OUTPUT.DIR, "stock_errors.RData"))
 
 #########################################################
 models_errors = NULL
@@ -189,6 +186,9 @@ dev.off()
 
 #########################################################
 # out-sample test
+
+print("Testing Out-sample values")
+
 orders_mae = models_errors[best_mae, 3 + 1:5]
 orders_mse = models_errors[best_mse, 3 + 1:5]
 orders_rhc = models_errors[best_rhc, 3 + 1:5]
@@ -215,40 +215,148 @@ for (test_number in 1:num_total_tests) {
   e1_mae = predict_horizons_error(orders_mae, v[train_range3], v[test_range3])
   e2_mae = predict_horizons_error(orders_mae, v[train_range4], v[test_range4])
   
-  e_mse = e_mse + (MSE(e1) + MSE(e2))/2
-  e_mae = e_mae + (MAE(e1) + MAE(e2))/2
-  e_rhc = e_rhc + (DeltaJ(e1, test_number, 1) + DeltaJ(e2, test_number, 2))/2
+  cost_mse = rbind(cost_mse, (DeltaJ(e1_mse, test_number, 3) + DeltaJ(e2_mse, test_number, 4))/2)
+  cost_mae = rbind(cost_mae, (DeltaJ(e1_mae, test_number, 3) + DeltaJ(e2_mae, test_number, 4))/2)
+  cost_rhc = rbind(cost_rhc, (DeltaJ(e1_rhc, test_number, 3) + DeltaJ(e2_rhc, test_number, 4))/2)
   
-  cost_mse = c(cost_mse, (DeltaJ(e1_mse, test_number, 3) + DeltaJ(e2_mse, test_number, 4))/2)
-  cost_mae = c(cost_mae, (DeltaJ(e1_mae, test_number, 3) + DeltaJ(e2_mae, test_number, 4))/2)
-  cost_rhc = c(cost_rhc, (DeltaJ(e1_rhc, test_number, 3) + DeltaJ(e2_rhc, test_number, 4))/2)
+  mse_mse =  rbind(mse_mse, (MSE(e1_mse) + MSE(e2_mse))/2)
+  mse_mae =  rbind(mse_mae, (MSE(e1_mae) + MSE(e2_mae))/2)
+  mse_rhc =  rbind(mse_mse, (MSE(e1_rhc) + MSE(e2_rhc))/2)
   
-  mse_mse =  c(mse_mse, (MSE(e1_mse) + MSE(e2_mse))/2)
-  mse_mae =  c(mse_mae, (MSE(e1_mae) + MSE(e2_mae))/2)
-  mse_rhc =  c(mse_mse, (MSE(e1_rhc) + MSE(e2_rhc))/2)
+  mae_mse =  rbind(mae_mse, (MAE(e1_mse) + MAE(e2_mse))/2)
+  mae_mae =  rbind(mae_mae, (MAE(e1_mae) + MAE(e2_mae))/2)
+  mae_rhc =  rbind(mae_rhc, (MAE(e1_rhc) + MAE(e2_rhc))/2)
+}
+#########################################################
+# Find the best AIC model
+#  If there is no overfitting in the MSE tests, 
+#  AIC and MSE should give identical results
+print("Testing AIC Models")
+
+cost_aic_i = NULL
+mse_aic_i = NULL
+mae_aic_i = NULL
+cost_aic_o = NULL
+mse_aic_o = NULL
+mae_aic_o = NULL
+
+build_training_matrix <- function(ts, h, order) {
+  ee = embed(ts, order + h)
   
-  mae_mse =  c(mae_mse, (MAE(e1_mse) + MAE(e2_mse))/2)
-  mae_mae =  c(mae_mae, (MAE(e1_mae) + MAE(e2_mae))/2)
-  mae_rhc =  c(mae_rhc, (MAE(e1_rhc) + MAE(e2_rhc))/2)
+  colnames(ee) = c(paste0("h", 1:h), paste0("x", 1:order))
+  colnames(ee)[1] = "target"
+  
+  if (h >= 2) {
+    ee = ee[,-c(2:h)]
+  }
+  
+  return(ee)
+}
+
+for (test_num in 1:num_total_tests) {
+  v = v_collection[[test_num]]
+  v_train = v[1:80]
+  
+  # use MSE error to select model orders
+  orders_aic = sapply(1:5, function(h) {
+    aic = sapply(2:8, function(i) {
+      ee = build_training_matrix(v_train, h, i)
+      AIC(lm(target ~ 0+., as.data.frame(ee)))
+    })
+    model_range[which.min(aic)]
+  })
+  
+  # use the best order to predict all
+  e1_aic = predict_horizons_error(orders_aic, v[train_range1], v[test_range1])
+  e2_aic = predict_horizons_error(orders_aic, v[train_range2], v[test_range2])
+  e3_aic = predict_horizons_error(orders_aic, v[train_range3], v[test_range3])
+  e4_aic = predict_horizons_error(orders_aic, v[train_range4], v[test_range4])
+  
+  # measure in-sample & outsample
+  cost_aic_i = rbind(cost_aic_i, (DeltaJ(e1_aic, test_num, 1) + DeltaJ(e2_aic, test_num, 2))/2)
+  mse_aic_i =  rbind(mse_aic_i, (MSE(e1_aic) + MSE(e2_aic))/2)
+  mae_aic_i =  rbind(mae_aic_i, (MAE(e1_aic) + MAE(e2_aic))/2)
+
+  cost_aic_o = rbind(cost_aic_o, (DeltaJ(e3_aic, test_num, 3) + DeltaJ(e4_aic, test_num, 4))/2)
+  mse_aic_o =  rbind(mse_aic_o, (MSE(e3_aic) + MSE(e4_aic))/2)
+  mae_aic_o =  rbind(mae_aic_o, (MAE(e3_aic) + MAE(e4_aic))/2)
 }
 
 #########################################################
+# Save raw results
+save(models_errors, best_mae, best_mse, best_rhc, 
+     cost_mse, cost_mae, cost_rhc, mse_mae, mse_mse, mse_rhc, mae_mse, mae_rhc, mae_mae,
+     file=file.path(OUTPUT.DIR, "stocks_performance.RData"))
+
+#########################################################
+# the covariance
+cov_partition = models_errors[,1:3]
+colnames(cov_partition)[1:3]=c("MSE", "DeltaJ", "MAE")
+
+#########################################################
+# Create Error tables
+#ET <- function(err_vector) paste(signif(mean(err_vector), 4), "\\pm", signif(sd(err_vector), 4))
+ET <- function(err_vector) round(mean(err_vector), 4)
+
 # prepare latex output
- perform_table = rbind(
-   data.frame(A = "MSE",  B = models_errors[best_mse,1], C = models_errors[best_mse,2], D = mean(mse_mse), E = mean(cost_mse)),
-   data.frame(A = "$\\Delta J$",  B = models_errors[best_rhc,1], C = models_errors[best_rhc,2], D = mean(mse_rhc), E = mean(cost_rhc)))
- colnames(perform_table) = c("Error Measure", "In-sample MSE", "In-sample $\\Delta J$", "Out-sample MSE" , "Out-sample $\\Delta J$")
+perform_table = rbind(
+  data.frame(A = "AIC",  
+             B = ET(mse_aic_i), 
+             C = ET(cost_aic_i), 
+             D = ET(mse_aic_o),
+             E = ET(cost_aic_o)),
+  data.frame(A = "MSE",  
+              B = models_errors[best_mse,1], 
+              C = models_errors[best_mse,2], 
+              D = ET(mse_mse),
+              E = ET(cost_mse)),
+   data.frame(A = "$\\Delta J$",  
+              B = models_errors[best_rhc,1], 
+              C = models_errors[best_rhc,2], 
+              D = ET(mse_rhc),
+              E = ET(cost_rhc)))
+colnames(perform_table) = c("Measure for selection", "In-sample MSE", "In-sample $\\Delta J$", "Out-of-sample MSE" , "Out-of-sample $\\Delta J$")
 
-save(perform_table, file=file.path(OUTPUT.DIR, "perform_table.RData"))
+ratio_dj_over_mse = (mean(cost_mse) - mean(cost_rhc)) / mean(cost_mse)
+#########################################################
+# save results
 
-save_tex_table(perform_table, "table_stocks_performance.tex", save.dir = OUTPUT.DIR, 
-               label = "tab:lqr_stocks_performance", digits = 4)
+perform_table_full = perform_table
+perform_table_full[,2:5] = bold_min_table_cols(perform_table_full[,2:5], digits=4)
+
+sink(file.path(OUTPUT.DIR, "stocks_results.txt"))
+options(width=150)
+print(perform_table_full)
+
+cat("\n")
+print("Correlation ceofficient of errors:")
+print(cor(cov_partition))
+
+cat("\n")
+print("Cost Improvement of DeltaJ over MSE (in %):")
+print(signif(ratio_dj_over_mse * 100, 3))
+
+cat("\n")
+cat("MSE and DeltaJ out-of-sample results t-test:")
+print(t.test(cost_mse, cost_rhc, paired=TRUE))
+
+sink()
+
+perform_table_paper = perform_table
+perform_table_paper = perform_table_paper[-1,] # drop the AIC for paper
+perform_table_paper[,2:5] = bold_min_table_cols(perform_table_paper[,2:5], digits=4)
+
+save_tex_table(perform_table_paper, "table_stocks_performance.tex", save.dir = OUTPUT.DIR, 
+               floating=FALSE, 
+               digits = 4)
 
 #########################################################
 #The timing experiments
+print("Timing started...")
+
 source("timing_stocks.R")
-save(t1, t2, t3, t4, table_timing, file=file.path(OUTPUT.DIR, "timings.RData"))
+
+save(t2, t3, t4, table_timing, file=file.path(OUTPUT.DIR, "stocks_timings.RData"))
 
 save_tex_table(table_timing, "table_stocks_timings.tex", save.dir = OUTPUT.DIR,
              label = "tab:lqr_stocks_timings")
-

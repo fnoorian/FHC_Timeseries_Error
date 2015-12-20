@@ -30,7 +30,7 @@ fit_beta <- function(h, order, ts) {
 
 fit_beta_matrix <- function(order_list, ts) {
   # fit multiple AR model to predict  many step ahead of "ts
-  # order_list: order of AR model to predict horizons 1 to N
+  # order_list: order of AR model to predict horizons 1 to n
   # ts: time-series to train on
   # returns: list of beta vectors in linear model Y = X * BETA
   

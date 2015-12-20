@@ -27,11 +27,12 @@ save_tex_table <- function(table.data, filename, save.dir = ".",
   sink(file.path(save.dir, filename))
 
   if (require("xtable")) {
+      latex_table = xtable(table.data, digits = digits, caption = caption, ...)
 
-  print(xtable(table.data, digits = digits, caption = caption, ...),
-        sanitize.rownames.function = function(x) x,
-        sanitize.colnames.function = function(x) x,
-        sanitize.text.function = function(x) x,
+  print(latex_table,
+        sanitize.rownames.function = identity, # function(x) x,
+        sanitize.colnames.function = identity, # function(x) x,
+        sanitize.text.function = identity, # function(x) x,
         digits = digits,
         caption.placement = caption.placement,
         table.placement = table.placement,
@@ -43,8 +44,49 @@ save_tex_table <- function(table.data, filename, save.dir = ".",
                                   '\\bottomrule\n')),
         ...)
   } else {
-    print(table.data)
+    print(table.data, digits = digits)
   }
 
   sink()
 }
+
+bold_min_table_rows <- function(x, digits = 3) {
+  # Wraps a "\\textbf{}" around the minimum element of each row
+  # useful to point out the minimum element after optimisations for LATEX
+  # INPUTS:
+  #   x: a table
+  #   digits: number of digits to round
+  # RETURNS:
+  #   a data.frame of strings, with minimum of each row wrapped in latex bold
+
+  x = as.data.frame(round(x, digits))
+  
+  # bold the minimum of each row
+  for (i in 1:nrow(x)) {
+    ind.min = which.min(x[i,])
+    x[i,ind.min] = paste0("\\textbf{", x[i,ind.min], "}")
+  }
+  
+  return (x)
+}
+
+bold_min_table_cols <- function(x, digits = 3) {
+  # Wraps a "\\textbf{}" around the minimum element of each column
+  # useful to point out the minimum element after optimisations for LATEX
+  # INPUTS:
+  #   x: a table
+  #   digits: number of digits to round
+  # RETURNS:
+  #   a data.frame of strings, with minimum of each column wrapped in latex bold
+  
+  x = as.data.frame(round(x, digits))
+  
+  # bold the minimum of each column
+  for (i in 1:ncol(x)) {
+    ind.min = which.min(x[,i])
+    x[ind.min, i] = paste0("\\textbf{", x[ind.min, i], "}")
+  }
+  
+  return (x)
+}
+

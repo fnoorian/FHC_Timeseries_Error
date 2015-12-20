@@ -60,8 +60,8 @@ A_coeff = matrix(2, 1, 1)
 B_coeff = matrix(3, 1, 1)
 C_coeff = matrix(4, 1, 1)
 
-P <- function(N) diag(N) * 2.5
-Q <- function(N) diag(N) * 3.5
+P <- function(n) diag(n) * 2.5
+Q <- function(n) diag(n) * 3.5
 
 horizons = c(rep.int(5,5), 5:1)
 

@@ -15,14 +15,14 @@
 ################################################################################
 # Definition of Matrices S and J (MPC basic definitions)
 
-MPC_S <- function(N, A, B) {
+MPC_S <- function(n, A, B) {
   
   nr = nrow(B)
   nc = ncol(B)
   
-  S = matrix(0, nrow=N*nr, ncol=N*nc)
+  S = matrix(0, nrow=n*nr, ncol=n*nc)
   
-  for (i in 1:N) {
+  for (i in 1:n) {
     posx = (i-1) * nr + (1:nr)
     posy = (i-1) * nc + (1:nc)
     S[posx, posy] = B
@@ -38,29 +38,29 @@ MPC_S <- function(N, A, B) {
   S
 }
 
-SA <- function(N) {
+SA <- function(n) {
   ret = NULL
-  for (i in 1:N) {
+  for (i in 1:n) {
     ret = rbind(ret, matrix_power(A_coeff, i))
   }
   
   return (ret)
 }
 
-SB <- function(N) MPC_S(N, A_coeff, B_coeff)
-SC <- function(N) MPC_S(N, A_coeff, C_coeff)
-SI <- function(N) MPC_S(N, A_coeff, diag(1,nrow(A_coeff),ncol(A_coeff)))
+SB <- function(n) MPC_S(n, A_coeff, B_coeff)
+SC <- function(n) MPC_S(n, A_coeff, C_coeff)
+SI <- function(n) MPC_S(n, A_coeff, diag(1,nrow(A_coeff),ncol(A_coeff)))
 
 #############
 # The cost function of LQ control
 # J = U * JA * U + 2 * U * JB * f + f * JC * f
-JA <- function(N) P(N) + t(SB(N)) %*% Q(N) %*% SB(N)
-JB <- function(N) t(SB(N)) %*% t(Q(N)) %*% SC(N)
-JC <- function(N) t(SC(N)) %*% Q(N)  %*% SC(N)
-JAB <- function(N) -solve(JA(N)) %*% JB(N)
-JAB_c <- function(N) -solve(P(N) + t(SB(N)) %*% Q(N) %*% SB(N), t(SB(N)) %*% t(Q(N))) # this is JAB = JAB_c %*% SC(N)
+JA <- function(n) P(n) + t(SB(n)) %*% Q(n) %*% SB(n)
+JB <- function(n) t(SB(n)) %*% t(Q(n)) %*% SC(n)
+JC <- function(n) t(SC(n)) %*% Q(n)  %*% SC(n)
+JAB <- function(n) -solve(JA(n)) %*% JB(n)
+JAB_c <- function(n) -solve(P(n) + t(SB(n)) %*% Q(n) %*% SB(n), t(SB(n)) %*% t(Q(n))) # this is JAB = JAB_c %*% SC(n)
 
 #############
 # Closed form cost function of LQ control
-cost_UV <- function(U, V, N) t(U) %*% JA(N) %*% U + 2 * t(U) %*% JB(N) %*% V + t(V) %*% JC(N) %*% V
-cost_XUV <- function(X, U, V, N) t(X) %*% Q(N) %*% X + t(U) %*% P(N) %*% U
+cost_UV <- function(U, V, n) t(U) %*% JA(n) %*% U + 2 * t(U) %*% JB(n) %*% V + t(V) %*% JC(n) %*% V
+cost_XUV <- function(X, U, V, n) t(X) %*% Q(n) %*% X + t(U) %*% P(n) %*% U

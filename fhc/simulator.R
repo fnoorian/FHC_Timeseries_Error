@@ -27,18 +27,18 @@ RHC_simulator <- function(V, E, horizons) {
   x = x0
   
   for (i in seq_along(horizons)) {
-    N = horizons[i]
-    current_E = E[E_pointer:(E_pointer+N-1)]
-    current_V = V[i:(i+N-1)]
-    E_pointer = E_pointer + N
+    n = horizons[i]
+    current_E = E[E_pointer:(E_pointer+n-1)]
+    current_V = V[i:(i+n-1)]
+    E_pointer = E_pointer + n
     
     # old style Y
-    #projected_Y = pinv(SC(N)) %*% SA(N) %*% x + current_V + current_E
-    #U = JAB(N) %*% projected_Y
+    #projected_Y = pinv(SC(n)) %*% SA(n) %*% x + current_V + current_E
+    #U = JAB(n) %*% projected_Y
     
     # avoiding the pseudo inverse
-    C_projected_Y = SA(N) %*% x + SC(N) %*% (current_V + current_E)
-    U =  JAB_c(N) %*% C_projected_Y
+    C_projected_Y = SA(n) %*% x + SC(n) %*% (current_V + current_E)
+    U =  JAB_c(n) %*% C_projected_Y
     
     U_current = U[1:n_B]
     x = A_coeff %*% x +  B_coeff %*% U_current + C_coeff %*% current_V[1]
@@ -52,7 +52,7 @@ RHC_simulator <- function(V, E, horizons) {
 
 Theta_simulator <- function(V, E, horizons) {
   # a simulator using theta and omega matrices  
-  N = length(horizons)
+  n = length(horizons)
   
   psi_y = Psi(horizons)
   phi_e = Phi(horizons)

@@ -1,24 +1,24 @@
 On Time Series Forecasting Error Measures for Finite Horizon Control
 ====================================================================
 
-The code contains implementation of the example from the paper: 
+The code implements examples from the paper 
 "On Time Series Forecasting Error Measures for Finite Horizon Control", 
 by F. Noorian and P. H. W. Leong, 
 submitted to IEEE Transactions on Control Systems Technology for review.
 
 ### Running the example
-If not installed, obtain and install R from http://www.r-project.org/ .
+If not installed, download and install R from <http://www.r-project.org/>.
 
-In the command prompt, type:
+To install package dependencies, in the R's command prompt, type:
+
+ > install.packages(c("xtable", "memoise", "Mcomp"))
+
+To run the main script:
 
  > source("main.R")
 
-The code will generate the latex tables and PDF images used in the paper.
-It will create an "Output" directory in the same folder to store its results.
-
-Although not required, we suggest installing memoise and xtable packages.
-
- > install.packages(c("xtable", "memoise"))
+The code will generate the output values, latex tables and PDF images used in the paper.
+The results are stored in "Output" directory in the folder where the code is located.
 
 ### Files
 - main.R: Runs all tests.
@@ -26,11 +26,12 @@ Although not required, we suggest installing memoise and xtable packages.
 - timing_inventory.R: timing tests for the inventory problem.
 - main_stocks.R: the stocks problem simulation.
 - timing_stocks.R: timing tests for the stocks problem.
+- main_stocks_compression_tests.R: Tests effects of compressing Theta matrix on DeltaJ accuracy. Results not in paper.
 - fhc/mpc_matrices.R: Basic matrix definitions for Finite horizon control
 - fhc/simulator.R: Step-by-step FHC simulator, to be used in comparison.
 - fhc/theta.R: Generation of matrices used in formulas based on above parameters.
 - prediction/linear_predictor.R: Function for linear AR model fitting and evaluation.
-- prediction/linear_predictor_power.R: Function for linear AR model fitting and evaluation with power transform.
+- prediction/linear_predictor_inventory.R: Function for linear AR model fitting and evaluation for the inventory probelm.
 - utils/matrix_tools.R: Useful matrix manipulation functions
 - formatting/*: Functions for formatting plots and tables
 - unittests/*: Unit-tests

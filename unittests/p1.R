@@ -31,8 +31,8 @@ A_coeff = matrix(2, 1, 1)
 B_coeff = matrix(3, 1, 1)
 C_coeff = matrix(4, 1, 1)
 
-P <- function(N) diag(N) * 2.5
-Q <- function(N) diag(N) * 3.5
+P <- function(n) diag(n) * 2.5
+Q <- function(n) diag(n) * 3.5
 
 horizons = c(5)#c(rep.int(5,5), 5:1)
 
@@ -67,19 +67,19 @@ n_C = ncol(C_coeff); stopifnot(n_C == 1) # only 1 input is supported in the emul
 x = x0
 
 for (i in 1:N_steps) {
-  N = horizons[i]
+  n = horizons[i]
   current_E = EL[[i]]
   current_V = VL[[i]]
   
-  projected_Y = pinv(SC(N)) %*% SA(N) %*% x + current_V + current_E
-  C_projected_Y = SA(N) %*% x + SC(N) %*% (current_V + current_E)
+  projected_Y = pinv(SC(n)) %*% SA(n) %*% x + current_V + current_E
+  C_projected_Y = SA(n) %*% x + SC(n) %*% (current_V + current_E)
   
   X0L[[i]] = x
   YL[[i]] = projected_Y
   CYL[[i]] = C_projected_Y
   
-  U_x = JAB(N) %*% projected_Y
-  U =  JAB_c(N) %*% C_projected_Y
+  U_x = JAB(n) %*% projected_Y
+  U =  JAB_c(n) %*% C_projected_Y
   UL[[i]] = U
   
   assert_vector_equality(U, U_x)

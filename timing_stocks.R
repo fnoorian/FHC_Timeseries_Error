@@ -134,8 +134,8 @@ t5 = t5 / REPEATS_FOR_ACCURACY_MSE
 #######
 # create the table
 table_timing = rbind(
-  data.frame(names = "Step-by-step", time = round(t4[1], 3), speedup = round(t4[1] / t4[1], 0) , computed_cost = mean(e_simulator_list)),
-  data.frame(names = "Closed form", time = round(t2[1], 3), speedup = round(t4[1] / t2[1], 1) , computed_cost = mean(e_rhc_full_list)),
+  data.frame(names = "Step-by-step simulation", time = round(t4[1], 3), speedup = round(t4[1] / t4[1], 0) , computed_cost = mean(e_simulator_list)),
+  data.frame(names = "Closed form $\\Delta J$", time = round(t2[1], 3), speedup = round(t4[1] / t2[1], 1) , computed_cost = mean(e_rhc_full_list)),
   data.frame(names = "Approximated $\\Delta J$", time = round(t3[1], 3), speedup = round(t4[1] / t3[1], 1) , computed_cost = mean(e_rhc_full_list)),
   data.frame(names = "MSE", time = round(t5[1], 3), speedup = round(t4[1] / t5[1], 0) , computed_cost = mean(e_mse_full_list)))
 colnames(table_timing) = c("Using", "Run-time (s)", "Speed-up", "Measured $\\Delta J$")

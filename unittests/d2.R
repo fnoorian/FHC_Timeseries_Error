@@ -66,8 +66,8 @@ B_coeff = rbind(B_coeff, 0)
 C_coeff = matrix(0, h+1, 1)
 C_coeff[h+1, 1] = -1
 
-Q <- function(N) diag(rep(c(0, 0, 0, 8), N)) # state weights
-P <- function(N) diag(rep(c(1, 2, 4), N)) # inputs weights
+Q <- function(n) diag(rep(c(0, 0, 0, 8), n)) # state weights
+P <- function(n) diag(rep(c(1, 2, 4), n)) # inputs weights
 
 horizons = c(4, 3, 3, 3)
 N_run = length(horizons) + tail(horizons,1) - 1

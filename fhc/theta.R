@@ -16,11 +16,11 @@
 # Definition of Matrices Theta and Omega
 
 # M_U function, as described in the paper
-# M_U_c <- function(N, h, t) {
+# M_U_c <- function(N, n, t) {
 #   # N is size of all Y
-#   # h is the horizon
+#   # n is the horizon
 #   # t is the current step
-#   ret = matrix(0, N * n_C, h * n_B)
+#   ret = matrix(0, N * n_C, n * n_B)
 #   
 #   replacement = pinv(C_coeff) %*% matrix_power(A_coeff, t) %*% B_coeff
 #   ret = matrix_block_replace(ret, 1, 1, replacement)
@@ -28,38 +28,38 @@
 # }
 
 # M_U function, simplified
-M_U <- function(h) {
-  # h is the current horizon len
+M_U <- function(n) {
+  # n is the current horizon len
   n_B = ncol(B_coeff)
   
-  ret = matrix(0, n_B, h * n_B)
+  ret = matrix(0, n_B, n * n_B)
   
   replacement = diag(n_B)
   ret = matrix_block_replace(ret, 1, 1, replacement)
   ret
 }
 
-M_phi <- function(N, h, t) {
+M_phi <- function(N, n, t) {
   n_B = ncol(B_coeff)
 
   I = diag(n_B)
   
-  ret = matrix(0, N * n_B, h * n_B) 
+  ret = matrix(0, N * n_B, n * n_B) 
   ret = matrix_block_replace(ret, t, 1, I)
   ret
 }
 
-SC_M_Y <- function(N, h, t) {
+SC_M_Y <- function(N, n, t) {
   # returns the SC %*% M_Y = SI %*% (C * MY)
   # N : size of all Y
-  # h : the current horizon length
+  # n : the current horizon length
   # t : the current time step
   n_A = ncol(A_coeff)
   n_C = ncol(C_coeff)
   
-  ret = matrix(0, h * n_A, N * n_C)
+  ret = matrix(0, n * n_A, N * n_C)
   
-  for (i in 1:h) {
+  for (i in 1:n) {
     ret = matrix_block_replace(ret, i, (t-1)+i, C_coeff)
   }
   if (t > 1) {
@@ -69,26 +69,26 @@ SC_M_Y <- function(N, h, t) {
     }
   }
   
-  SI(h) %*% ret
+  SI(n) %*% ret
 }
 
-SC_M_E <- function(N, h, start) {
+SC_M_E <- function(N, n, start) {
   # returns the SC %*% M_E 
   # M_E is similar to M_Y but doesn't accumulate error
   # N : size of all E
-  # h : the current horizon length
+  # n : the current horizon length
   # start : start of the current time step in the vector
   n_A = ncol(A_coeff)
   n_C = ncol(C_coeff)
   
-  ret = matrix(0, h * n_A, N * n_C)
+  ret = matrix(0, n * n_A, N * n_C)
   
-  for (i in 1:h) {
+  for (i in 1:n) {
     ret = matrix_block_replace(ret,  i, (start - 1) + i, C_coeff)
   }
   
   
-  SI(h) %*% ret
+  SI(n) %*% ret
 }
 
 Gamma_internal <- function(instance, t) {
